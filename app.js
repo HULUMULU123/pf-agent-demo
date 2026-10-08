@@ -3,7 +3,7 @@ const fmt=(n,d=0)=>Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,max
 const chip=(t,c='gray')=>`<span class="chip ${c}">${t}</span>`;
 const stc={ok:'ok',warn:'warn',bad:'bad'};
 const stTxt={ok:'В норме',warn:'Внимание',bad:'Риск'};
-const S={role:'bank',pid:'lg',site:0,scen:'base',fm:{price:168000,cost:128000,months:22,rate:10.7},psdCur:false,
+const S={role:'client',cw:null,pid:'lg',site:0,scen:'base',fm:{price:168000,cost:128000,months:22,rate:10.7},psdCur:false,
  pay:JSON.parse(JSON.stringify(PAYMENTS)),log:[['14.09, 16:20','Контроль-агент','Платёж № 418 помечен как нецелевой, ожидает решения банка']],
  calc:{share:3,margin:4,team:15,months:24},house:'all',mort:{price:25.9,down:20,rate:6,years:25},
  chat:[{a:1,t:'Здравствуйте! Я консультирую по сделке и оформлению проекта. Задайте вопрос или выберите пример ниже.'}],wiz:0,searched:true};
@@ -37,7 +37,7 @@ const visible=()=>S.role==='dev'?PROJECTS.filter(p=>p.dev.includes('СтройА
 const slider=(path,label,min,max,step,unit='')=>{const v=path.split('.').reduce((o,k)=>o[k],S);return `<div class="fld"><label>${label}<output data-val="${path}" data-u="${unit}">${fmt(v,step<1?1:0)}${unit}</output></label><input type="range" data-bind="${path}" min="${min}" max="${max}" step="${step}" value="${v}"></div>`};
 
 /* ---------- pages ---------- */
-const P={};
+const P={};Object.assign(P,PC);Object.assign(TITLES,Object.fromEntries(CNAV.map(n=>[n[0],n[2]])));
 
 P.overview=()=>{
  const ps=visible(),loan=ps.reduce((a,p)=>a+p.loan,0),red=ps.filter(p=>p.st==='bad').length,yel=ps.filter(p=>p.st==='warn').length;
@@ -256,8 +256,9 @@ function ask(text){S.chat.push({a:0,t:text});render();setTimeout(()=>{const f=CH
 /* ---------- core ---------- */
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2800)}
 function render(){
- let h=location.hash.slice(1)||'overview';if(!P[h])h='overview';
- $('#nav').innerHTML=NAV.filter(n=>!(S.role==='dev'&&n[0]==='case')).map(n=>`<a href="#${n[0]}" class="${n[0]===h?'on':''}"><i>${n[1]}</i>${S.role==='dev'&&n[0]==='overview'?'Мои проекты':n[2]}${n[0]==='control'&&S.pay.some(x=>x.s==='flag')?'<em>1</em>':''}</a>`).join('');
+ const isC=S.role==='client',CL=['build','track'];let h=location.hash.slice(1);if(!P[h])h=isC?'build':'overview';
+ if(isC&&!CL.includes(h)){location.hash='#build';return}if(!isC&&CL.includes(h)){location.hash='#overview';return}
+ $('#nav').innerHTML=(isC?CNAV:NAV).filter(n=>!(S.role==='dev'&&n[0]==='case')).map(n=>`<a href="#${n[0]}" class="${n[0]===h?'on':''}"><i>${n[1]}</i>${S.role==='dev'&&n[0]==='overview'?'Мои проекты':n[2]}${n[0]==='control'&&S.pay.some(x=>x.s==='flag')?'<em>1</em>':''}</a>`).join('');
  $('#title').textContent=S.role==='dev'&&h==='overview'?'Мои проекты':TITLES[h];
  if(S.role==='dev'&&h==='case'){location.hash='#overview';return}
  const sy=window.scrollY;$('#view').innerHTML=P[h]();document.querySelectorAll('#role button').forEach(b=>b.classList.toggle('on',b.dataset.role===S.role));
@@ -279,16 +280,17 @@ const A={
  wizclose:()=>{$('#modal').hidden=true},
  wizsend:()=>{$('#modal').hidden=true;S.log.unshift(['07.10, 12:05','Договор-агент','Допсоглашение № 3 (замена поставщика арматуры) отправлено на согласование']);toast('Допсоглашение отправлено на согласование');render()}
 };
+Object.assign(A,AC);
 document.addEventListener('click',ev=>{
  const e=ev.target.closest('[data-act]');if(e&&A[e.dataset.act]){if(e.type!=='checkbox')A[e.dataset.act](e);return}
- const r=ev.target.closest('#role button');if(r){S.role=r.dataset.role;if(S.role==='dev'&&S.pid!=='lg'&&!visible().find(p=>p.id===S.pid))S.pid='lg';render()}
+ const r=ev.target.closest('#role button');if(r){S.role=r.dataset.role;if(S.role==='dev'&&S.pid!=='lg'&&!visible().find(p=>p.id===S.pid))S.pid='lg';const dh=S.role==='client'?'#build':'#overview';if(location.hash!==dh){location.hash=dh}else render()}
  if(ev.target.id==='modal')$('#modal').hidden=true;
  if(ev.target.id==='burger'){$('#side').classList.toggle('open');$('#scrim').classList.toggle('on')}if(ev.target.id==='scrim'){$('#side').classList.remove('open');$('#scrim').classList.remove('on')}
 });
-document.addEventListener('change',ev=>{const e=ev.target;if(e.dataset.act==='psdcur')A.psdcur(e);if(e.id==='pick'){S.pid=e.value;render()}});
+document.addEventListener('change',ev=>{const e=ev.target;if(e.dataset.act==='psdcur')A.psdcur(e);if(e.dataset.act&&e.type==='checkbox'&&/^cw(opt|flag)$/.test(e.dataset.act))A[e.dataset.act](e);if(e.id==='pick'){S.pid=e.value;render()}});
 document.addEventListener('keydown',ev=>{if(ev.key==='Enter'&&ev.target.id==='q')A.askfree()});
 document.addEventListener('input',ev=>{const e=ev.target;if(!e.dataset.bind)return;const ks=e.dataset.bind.split('.');const o=ks.slice(0,-1).reduce((a,k)=>a[k],S);o[ks.pop()]=+e.value;
  document.querySelectorAll(`[data-val="${e.dataset.bind}"]`).forEach(o=>o.textContent=fmt(+e.value,+e.step<1?1:0)+(o.dataset.u||''));
- const f={fm:UPD_fm,calc:UPD_calc,mort:UPD_mort}[ks[0]];if(f)f()});
+ const f={fm:UPD_fm,calc:UPD_calc,mort:UPD_mort,cw:window.UPD_cw}[ks[0]];if(f)f()});
 window.addEventListener('hashchange',()=>{window.scrollTo(0,0);render()});
 render();

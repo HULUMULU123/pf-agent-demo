@@ -103,3 +103,16 @@ input[type=range]{width:100%;accent-color:var(--sber)}
 #scrim{display:none}
 @media(max-width:760px){#scrim.on{display:block;position:fixed;inset:0;background:#0005;z-index:14}}
 .g>*{min-width:0}
+/* ---- client (B2C) ---- */
+.stepper{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto}.sp{flex:1;min-width:92px;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:#fff;border:1px solid var(--line);color:var(--mut);font-size:12px;font-weight:600}
+.sp b{width:24px;height:24px;border-radius:50%;background:#e6ebe7;display:grid;place-items:center;flex:none}.sp.done{color:var(--sber-d);cursor:pointer}.sp.done b,.sp.act b{background:var(--sber);color:#fff}.sp.act{border-color:var(--sber);color:var(--ink);box-shadow:0 0 0 3px #21a03822}
+.pin.sel i{outline:3px solid var(--sber);outline-offset:2px;transform:scale(1.25)}.pin.ok i{background:var(--sber)}
+.hs{width:100%;height:auto;display:block;border-radius:10px}.vcard{border:2px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;cursor:pointer}.vcard.on{border-color:var(--sber);box-shadow:0 0 0 3px #21a03822}.vcard .bd{padding:10px}
+.sw{width:26px;height:26px;border-radius:7px;border:1px solid #0002;display:inline-block;margin-right:4px}
+.plan{display:flex;flex-wrap:wrap;gap:6px}.plan div{min-width:96px;padding:12px 8px;border-radius:8px;display:flex;flex-direction:column;font-size:12px;border:1px solid #0001}
+.prod{position:relative;border:2px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:#fff}.prod.on{border-color:var(--sber);background:var(--sber-bg)}.prod.best{border-color:var(--sber)}.prod.off{background:#f6f7f6;color:var(--mut)}
+.rec{position:absolute;top:-10px;left:12px;background:var(--sber);color:#fff;font-size:11px;font-weight:700;padding:1px 10px;border-radius:10px}
+.chk input[type=checkbox]{width:18px;height:18px;accent-color:var(--sber)}
+.seg{flex:none}
+@media(max-width:760px){.seg button{padding:5px 7px;font-size:11px}.sp{min-width:84px}}
+@media(max-width:760px){.stepper{gap:4px}.sp{flex:none;min-width:0;padding:6px 8px}.sp:not(.act) span{display:none}.sp.act{flex:1}}
